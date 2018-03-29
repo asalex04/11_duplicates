@@ -25,14 +25,15 @@ def get_duplicates(search_dir_path):
 
 
 def get_file_hash_md5(duplicates):
-    m = hashlib.md5()
-    with open(duplicates, 'rb', 4096) as file:
+    blocksize = 4096
+    hasher = hashlib.md5()
+    with open(duplicates, 'rb', blocksize) as file:
         while True:
-            data = file.read(4096)
-            if not data:
+            buff = file.read(blocksize)
+            if not buff:
                 break
-            m.update(data)
-        return m.hexdigest()
+            hasher.update(buff)
+        return hasher.hexdigest()
 
 
 def print_path_duplicate_file(search_dir_path):

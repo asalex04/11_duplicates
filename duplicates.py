@@ -13,24 +13,27 @@ def get_parser():
     return parser
 
 
-def get_duplicates(search_dir_path):
-    files_with_pathes_dict = collections.defaultdict(list)
-    for root, dirs, files in os.walk(search_dir_path):
+def get_duplicates(dir_path):
+    filenames_with_pathes_dict = collections.defaultdict(list)
+    for root, dirs, files in os.walk(dir_path):
         for filename in files:
             fullpath = os.path.join(root, filename)
             file_hash = get_file_hash_md5(fullpath)
-            files_with_pathes_dict[file_hash].append(fullpath)
+            filenames_with_pathes_dict[file_hash].append(fullpath)
     return files_with_pathes_dict
 
 
-def get_file_hash_md5(file_for_hash, blocksize=4096):
+def get_file_hash_md5(file_for_hash, first_block=False):
     hasher = hashlib.md5()
+    blocksize = 1024 * 1024
+    file_size = os.path.getsize(file_for_hash)
     with open(file_for_hash, 'rb') as file:
         while True:
             buff = file.read(blocksize)
-            if not buff:
-                break
             hasher.update(buff)
+            file_size -= blocksize
+            if (len(buff) < blocksize or first_block):
+                break
         return hasher.hexdigest()
 
 
@@ -39,8 +42,7 @@ def print_path_duplicate_file(print_dir_path):
     for _, list_of_filepaths in files_hash_and_path_dict.items():
         if len(list_of_filepaths) > 1:
             print('\nDuplicates:')
-            for filepath in list_of_filepaths:
-                print(filepath)
+            print('\n'.join(list_of_filepaths))
 
 
 if __name__ == '__main__':
